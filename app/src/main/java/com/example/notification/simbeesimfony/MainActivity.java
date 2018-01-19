@@ -1,6 +1,12 @@
 package com.example.notification.simbeesimfony;
 
 import android.support.v7.app.AppCompatActivity;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 
@@ -38,8 +44,14 @@ import android.content.Context;
 
         import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity  implements
-        View.OnClickListener {
+public class MainActivity extends AppCompatActivity  implements View.OnClickListener, ValueEventListener {
+
+    //send database
+    private FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+    private DatabaseReference mRootReference = firebaseDatabase.getReference();
+    private DatabaseReference mSendTokenIdReference = mRootReference.child("Token");
+    private DatabaseReference mPhoneReference = mRootReference.child
+            ("Phone");
 
     private static final String TAG = "PhoneAuthActivity";
 
@@ -192,6 +204,9 @@ public class MainActivity extends AppCompatActivity  implements
     @Override
     public void onStart() {
         super.onStart();
+        //send
+        mSendTokenIdReference.addValueEventListener(this);
+        mPhoneReference.addValueEventListener(this);
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         updateUI(currentUser);
@@ -382,6 +397,19 @@ public class MainActivity extends AppCompatActivity  implements
             mStatusText.setText(R.string.signed_in);
             mDetailText.setText(getString(R.string.firebase_status_fmt, user.getUid()));
             */
+
+            if((mPhoneNumberField.getText().toString().isEmpty()))  {
+                System.out.println("MainActivity.OnCreate:" + FirebaseInstanceId.getInstance().getToken());
+
+//                String saveData = mPhoneNumberField.getText().toString()+"#"+FirebaseInstanceId.getInstance().getToken();
+//                mSendTokenIdReference.push().setValue(saveData);
+
+                mSendTokenIdReference.setValue(FirebaseInstanceId.getInstance().getToken());
+                mPhoneReference.setValue("SDFSDF");
+                //mPhoneReference.setValue(mPhoneNumberField.getText().toString());
+               // mSendTokenIdReference.push().setValue(mPhoneNumberField.getText().toString());
+            }
+
             Intent intent = new Intent(this, Hallfinder.class);
             startActivity(intent);
             finish();
@@ -453,4 +481,13 @@ public class MainActivity extends AppCompatActivity  implements
         }
     }
 
+    @Override
+    public void onDataChange(DataSnapshot dataSnapshot) {
+
+    }
+
+    @Override
+    public void onCancelled(DatabaseError databaseError) {
+
+    }
 }
